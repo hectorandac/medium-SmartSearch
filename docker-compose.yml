@@ -1,0 +1,65 @@
+version: '2.1'
+
+services:
+  psql:
+    command: postgres
+    container_name: smartsearch-psql
+    hostname: psql
+    image: postgres
+    restart: always
+    environment:
+    - POSTGRES_PASSWORD=qusUt1i9obru4ISTUG2f
+    ports:
+    - "5432"
+    networks:
+    - app
+
+  elasticsearch:
+    container_name: smartsearch-elasticsearch
+    build:
+      context: config/docker/elasticsearch/
+    volumes:
+      - ./config/docker/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+    - "9200"
+    environment:
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+    - app
+
+  # Main application
+  rails:
+    restart: always
+    user: root
+    container_name: smartsearch-app
+    build: .
+    command: bin/start_rails_docker
+    volumes:
+    - .:/pierpontglobal-api
+    environment:
+    - DB_HOST=psql
+    - DB_PASSWORD=qusUt1i9obru4ISTUG2f
+    - DB_USER=postgres
+    - ELASTICSEARCH_URL=http://elasticsearch:9200
+    - PORT=3000
+    ports:
+    - "3000:3000"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+    - app
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+
+networks:
+  app:
+    driver: bridge
