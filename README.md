@@ -18,6 +18,8 @@ cd project
 ### Build the images a run :muscle:
 If you which to run this project I encorage you to install Docker in your machine. Skip all that complex installation.
 
+![](https://raw.githubusercontent.com/hectorandac/medium-SmartSearch/master/Docker.Building.gif)
+
 As most of my projects I dockerized the necesary components to facilitate the intalation process.
 If you are using docker it is enough to run `docker-compose up`, That's it! 
 
